@@ -62,11 +62,15 @@ GEM
     coffee-script-source (1.12.2)
     concurrent-ruby (1.0.5)
     erubi (1.6.0)
+    eventmachine (1.2.3)
     execjs (2.7.0)
     faraday (0.12.1)
       multipart-post (>= 1.2, < 3)
     faraday_middleware (0.11.0.1)
       faraday (>= 0.7.4, < 1.0)
+    faye-websocket (0.10.7)
+      eventmachine (>= 0.12.0)
+      websocket-driver (>= 0.5.1)
     ffi (1.9.18)
     gli (2.16.0)
     globalid (0.4.0)
@@ -194,6 +198,7 @@ DEPENDENCIES
   byebug
   capybara (~> 2.13)
   coffee-rails (~> 4.2)
+  faye-websocket
   jbuilder (~> 2.5)
   listen (>= 3.0.5, < 3.2)
   pg (~> 0.18)
