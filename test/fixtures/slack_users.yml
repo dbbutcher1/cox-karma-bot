@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  alias: MyString
+  slack_id: MyString
+  karma: 1
+
+two:
+  alias: MyString
+  slack_id: MyString
+  karma: 1
