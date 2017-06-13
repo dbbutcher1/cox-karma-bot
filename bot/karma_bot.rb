@@ -2,6 +2,16 @@ require 'slack-ruby-bot'
 
 class KarmaBot < SlackRubyBot::Bot
 
+  help do
+    title 'Cox Karma Bot'
+    desc 'Tracks Karma'
+
+    command 'leaderboard' do
+      desc 'Prints the top 10 users'
+      long_desc 'Cause I can....'
+    end
+  end
+
   match /(\+{2,})|(\-{2,})/ do |client, data, match|
     channel = SlackChannel.find_or_create_by( slack_id: data.channel )
 
@@ -47,5 +57,6 @@ class KarmaBot < SlackRubyBot::Bot
   end
 
   command 'leaderboard' do |client, data, match|
+    puts match[ :count ]
   end
 end
