@@ -16,21 +16,21 @@ class KarmaBot < SlackRubyBot::Bot
     channel = SlackChannel.find_or_create_by( slack_id: data.channel )
 
     # Magical regex that will find all instances of users with a + or -
-    karma_changes = data.text.scan( /(\<?(.+?)\>?\s*((\+{2,})|(\-{2,})))/ )
+    karma_changes = data.text.scan( /[>\w]+\s*[+]{2,}|[>\w]+\s*[-]{2,}/ )
 
     # Use this to print out stuff in a formatted way in slack
     attachments = []
 
     karma_changes.each do | karma_change |
       # Do some magic and remove the cruft so that we can act on only the requested karma chnage
-      change = karma_change.delete_if { |change| change.nil? ||
-        change.match( /(\<?(.+?)\>?\s*((\+{2,})|(\-{2,})))/ ).nil? }.first
+      change = karma_change.scan( /[+]{2,}|[-]{2,}/ ).first
 
       # Parse out the user id and remove angle brackets and the @ symbol
-      user_string = change.gsub( /\<|\>|\+|\-|\@/, '' ).strip
+      user_string = change.gsub( /\<|\>|\+{2,}|\-{2,}|\@/, '' ).strip
       puts change, user_string
 
-      slack_id, user_alias = user_string.split( '|' )
+      #things not coming in with full user strings so not needed...
+      #slack_id, user_alias = user_string.split( '|' )
 
       if change.include?( '+' )
         karma = change.count( '+' ) - 1 > Rails.application.config.max_karma ?
