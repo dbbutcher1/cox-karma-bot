@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170611205258) do
+ActiveRecord::Schema.define(version: 20170613123614) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -19,6 +19,7 @@ ActiveRecord::Schema.define(version: 20170611205258) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "slack_id"
   end
 
   create_table "slack_channels_users", id: false, force: :cascade do |t|
@@ -31,7 +32,7 @@ ActiveRecord::Schema.define(version: 20170611205258) do
   create_table "slack_users", force: :cascade do |t|
     t.string "alias"
     t.string "slack_id"
-    t.integer "karma"
+    t.integer "karma", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
