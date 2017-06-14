@@ -15,6 +15,9 @@ module CoxKarmaBot
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
     config.max_karma = 5
+    config.top_limit = 20
+    config.top_default = 5
+    config.leader_default = 10
   end
 
   SlackRubyBot::Client.logger.level = Logger::DEBUG
