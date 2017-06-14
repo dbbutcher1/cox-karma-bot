@@ -1,6 +1,7 @@
 require 'slack-ruby-bot'
 
 class KarmaBot < SlackRubyBot::Bot
+
   help do
     title 'Cox Karma Bot'
     desc 'Tracks Karma'
@@ -16,128 +17,159 @@ class KarmaBot < SlackRubyBot::Bot
     end
 
     command 'leaderboard' do
-      desc 'Prints the top 10 users across all channels'
+      desc "Prints the top 10 users across all channels"
       long_desc 'This command shows who leads in karma across the organization'
     end
 
     command 'top' do
       desc 'Prints the top users within a channel'
-      long_desc 'This command will display the top X users (default 5) within a channel.\n\nexample:\n @coxkarma top 7'
+      long_desc "This command will display the top X users (default 5) within a channel.\n\nexample:\n @coxkarma top 7"
     end
   end
 
   match /(\+{2,})|(\-{2,})/ do |client, data, match|
-    channel = SlackChannel.find_or_create_by( slack_id: data.channel )
 
-    # Magical regex that will find all instances of users with a + or -
-    karma_changes = data.text.scan( /(([\w^-]+|<[^>]+>)\s*([+]{2,}|[-]{2,}))/ ).collect { |x| x.first }
+    begin
 
-    # Use this to print out stuff in a formatted way in slack
-    attachments = []
+      channel = SlackChannel.find_or_create_by( slack_id: data.channel )
 
-    karma_changes.each do | karma_change |
+      # Magical regex that will find all instances of users with a + or -
+      karma_changes = data.text.scan( /(([\w^-]+|<[^>]+>)\s*([+]{2,}|[-]{2,}))/ ).collect { |x| x.first }
 
-      # Do some magic and remove the cruft so that we can act on only the requested karma chnage
-      change = karma_change.scan( /[+]{2,}|[-]{2,}/ ).first
+      # Use this to print out stuff in a formatted way in slack
+      attachments = []
 
-      # Parse out the user id and remove angle brackets and the @ symbol
-      user_string = karma_change.gsub( /\<|\>|\+{2,}|\-{2,}|\@/, '' ).strip
+      karma_changes.each do | karma_change |
 
-      slack_id, user_alias = user_string.split( '|' )
+        # Do some magic and remove the cruft so that we can act on only the requested karma chnage
+        change = karma_change.scan( /[+]{2,}|[-]{2,}/ ).first
 
-      if change.include?( '+' )
-        karma = change.count( '+' ) - 1 > Rails.application.config.max_karma ?
-          Rails.application.config.max_karma : change.count( '+' ) - 1
-      else
-        karma = -( change.count( '-' ) - 1 > Rails.application.config.max_karma ?
-          Rails.application.config.max_karma : change.count( '-' ) - 1 )
+        # Parse out the user id and remove angle brackets and the @ symbol
+        user_string = karma_change.gsub( /\<|\>|\+{2,}|\-{2,}|\@/, '' ).strip
+
+        slack_id, user_alias = user_string.split( '|' )
+
+        if change.include?( '+' )
+          karma = change.count( '+' ) - 1 > Rails.application.config.max_karma ?
+            Rails.application.config.max_karma : change.count( '+' ) - 1
+        else
+          karma = -( change.count( '-' ) - 1 > Rails.application.config.max_karma ?
+            Rails.application.config.max_karma : change.count( '-' ) - 1 )
+        end
+
+        slack_user = SlackUser.find_or_create_by( slack_id: slack_id )
+        slack_user.slack_channels << channel if slack_user.channels.find_by( id: channel.id ).nil?
+        slack_user.alias = user_alias unless user_alias.blank?
+
+        if slack_id != data.user
+
+          slack_user.karma += karma
+          slack_user.save!
+
+          attachments << {
+            fallback: "<@#{slack_user.slack_id}> now has #{slack_user.karma}",
+            title: 'Karma Given',
+            text: "<@#{slack_user.slack_id}> now has #{slack_user.karma}",
+            color: '#00FF00'
+          }
+        else
+          if karma > 0
+
+            karma *= -1
+
+            slack_user.karma += karma
+            slack_user.save!
+
+            attachments << {
+              fallback: "Ego is getting to you... <@#{slack_user.slack_id}> now has #{slack_user.karma}",
+              title: 'Karma Not Given',
+              text: "Ego is getting to you... <@#{slack_user.slack_id}> now has #{slack_user.karma}",
+              color: '#FF0000'
+            }
+          else
+            attachments << {
+                fallback: "Don't be so hard on yourself...",
+                title: "It'll be ok",
+                text: "Don't be so hard on yourself...",
+                color: '#FF00'
+            }
+          end
+        end
       end
 
-      #unless slack_id == client.user
-        slack_user = SlackUser.find_or_create_by( slack_id: slack_id )
-        slack_user.karma += karma
-        slack_user.slack_channels << channel unless slack_user.channels.find( channel.id )
-        slack_user.alias = user_alias unless user_alias.blank?
-        slack_user.save!
+      client.web_client.chat_postMessage( channel: channel.slack_id, as_user: true, attachments: attachments )
 
-        attachments << {
-          fallback: "<@#{slack_user.slack_id}> now has #{slack_user.karma}",
-          title: 'Karma Given',
-          text: "<@#{slack_user.slack_id}> now has #{slack_user.karma}",
-          color: '#00FF00'
-        }
-      #end
+    rescue Exception => e
+      puts e.message, e.backtrace
+      client.say(
+          channel: data.channel,
+          text: "<@#{data.user}> :poop:! We encountered an error :cry:!!!>"
+      )
     end
-
-    client.web_client.chat_postMessage( channel: channel.slack_id, as_user: true, attachments: attachments )
   end
 
   command 'leaderboard' do |client, data, match|
-    #use to report user karma
-    text = ''
 
-    # Use this to print out stuff in a formatted way in slack
-    attachments = []
+    begin
+      #use to report user karma
+      text = ''
 
-    slack_users = SlackUser.limit( match[:count].to_i ).order( 'karma DESC' )
+      # Use this to print out stuff in a formatted way in slack
+      attachments = []
 
-    slack_users.each_with_index do |user, index|
-      text += "#{index + 1}. <@#{user.slack_id}> [#{user.karma} karma]\n"
+      slack_users = SlackUser.limit( 10 ).order( 'karma DESC' )
+
+      slack_users.each_with_index do |user, index|
+        text += "#{index + 1}. <@#{user.slack_id}> [#{user.karma} karma]\n"
+      end
+
+      attachments << {
+          pretext: 'Top 10 Karma Leaders',
+          title: 'Users',
+          text: text,
+          color: '#110099'
+      }
+
+      client.web_client.chat_postMessage( channel: data.channel, as_user: true, attachments: attachments )
+    rescue Exception => e
+      client.say(
+          channel: data.channel,
+          text: "<@#{data.user}> :poop:! We encountered an error :cry:!!!>"
+      )
     end
 
-    attachments << {
-        pretext: 'Top 10 Karma Leaders',
-        title: 'Users',
-        text: text,
-        color: '#110099'
-    }
-
-    client.web_client.chat_postMessage( channel: data.channel, as_user: true, attachments: attachments )
   end
 
   command 'top' do |client, data, match|
-    #use to report user karma
-    text = ''
+    count = match.to_a.find { |val| val.to_i > 0 }
+    count = count.nil? ? 5 : [ count, 20 ].min
 
-    # Use this to print out stuff in a formatted way in slack
-    attachments = []
+    begin
+      #use to report user karma
+      text = ''
 
-    slack_users = SlackChannel.find_by( slack_id: data.channel ).users.limit( 5 ).order( 'karma DESC' )
+      # Use this to print out stuff in a formatted way in slack
+      attachments = []
 
-    slack_users.each_with_index do |user, index|
-      text += "#{index + 1}. <@#{user.slack_id}> [#{user.karma} karma]\n"
+      slack_users = SlackChannel.find_by( slack_id: data.channel ).users.limit( count ).order( 'karma DESC' )
+
+      slack_users.each_with_index do |user, index|
+        text += "#{index + 1}. <@#{user.slack_id}> [#{user.karma} karma]\n"
+      end
+
+      attachments << {
+          pretext: "Top #{count} Karma Leaders",
+          title: 'Users',
+          text: text,
+          color: '#110099'
+      }
+
+      client.web_client.chat_postMessage( channel: data.channel, as_user: true, attachments: attachments )
+    rescue Exception => e
+      client.say(
+          channel: data.channel,
+          text: "<@#{data.user}> :poop:! We encountered an error :cry:!!!>"
+      )
     end
-
-    attachments << {
-        pretext: "Top 5 Karma Leaders",
-        title: 'Users',
-        text: text,
-        color: '#110099'
-    }
-
-    client.web_client.chat_postMessage( channel: data.channel, as_user: true, attachments: attachments )
-  end
-
-  match /top (?<count>\w*)$/ do |client, data, match|
-    #use to report user karma
-    text = ''
-
-    # Use this to print out stuff in a formatted way in slack
-    attachments = []
-
-    slack_users = SlackChannel.find_by( slack_id: data.channel ).users.limit( match[:count].to_i ).order( 'karma DESC' )
-
-    slack_users.each_with_index do |user, index|
-      text += "#{index + 1}. <@#{user.slack_id}> [#{user.karma} karma]\n"
-    end
-
-    attachments << {
-        pretext: "Top #{match[:count]} Karma Leaders",
-        title: 'Users',
-        text: text,
-        color: '#110099'
-    }
-
-    client.web_client.chat_postMessage( channel: data.channel, as_user: true, attachments: attachments )
   end
 end
