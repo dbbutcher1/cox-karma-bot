@@ -47,6 +47,7 @@ class KarmaBot < SlackRubyBot::Bot
 
       slack_user = SlackUser.find_or_create_by( slack_id: slack_id )
       slack_user.karma += karma
+      slack_user.slack_channels << channel
       slack_user.alias = user_alias unless user_alias.blank?
       slack_user.save!
 
