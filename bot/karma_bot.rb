@@ -21,7 +21,7 @@ class KarmaBot < SlackRubyBot::Bot
     channel = SlackChannel.find_or_create_by( slack_id: data.channel )
 
     # Magical regex that will find all instances of users with a + or -
-    karma_changes = data.text.scan( /(([\w]+|<[^>]+>)\s*([+]{2,}|[-]{2,}))/ ).collect { |x| x.first }
+    karma_changes = data.text.scan( /(([\w^-]+|<[^>]+>)\s*([+]{2,}|[-]{2,}))/ ).collect { |x| x.first }
 
     # Use this to print out stuff in a formatted way in slack
     attachments = []
@@ -33,7 +33,6 @@ class KarmaBot < SlackRubyBot::Bot
 
       # Parse out the user id and remove angle brackets and the @ symbol
       user_string = karma_change.gsub( /\<|\>|\+{2,}|\-{2,}|\@/, '' ).strip
-      puts change, user_string
 
       slack_id, user_alias = user_string.split( '|' )
 
