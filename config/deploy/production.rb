@@ -59,3 +59,12 @@
 #     auth_methods: %w(publickey password)
 #     # password: "please use keys"
 #   }
+set :rails_env, 'production'
+
+server ENV[ 'DEPLOY_SERVER_IP' ],
+ssh_options: {
+  user: ENV[ 'DEPLOY_USER' ],
+  keys: [ ENV[ 'DEPLOY_KEY' ] ],
+  forward_agent: false,
+  auth_methods: %w(publickey)
+}

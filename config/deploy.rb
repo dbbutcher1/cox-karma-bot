@@ -30,4 +30,4 @@ set :repo_url, "git@github.com:dbbutcher1/cox-karma-bot.git"
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
 
 # Default value for keep_releases is 5
-# set :keep_releases, 5
+set :keep_releases, 3

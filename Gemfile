@@ -32,6 +32,8 @@ gem 'jbuilder', '~> 2.5'
 
 # Use Capistrano for deployment
 gem 'capistrano-rails', group: :development
+gem 'capistrano-rvm'
+gem 'capistrano-bundler'
 
 gem 'slack-ruby-bot'
 gem 'faye-websocket'
