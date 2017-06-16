@@ -80,6 +80,6 @@ test:
 #
 production:
   <<: *default
-  database: cox-karma-bot_production
-  username: cox-karma-bot
-  password: <%= ENV['COX-KARMA-BOT_DATABASE_PASSWORD'] %>
+  database: <%= Diplomat::Kv.get( 'bee/config/beeKarma/database' ) %>
+  username: <%= Diplomat::Kv.get( 'bee/config/beeKarma/database_username' ) %>
+  password: <%= Diplomat::Kv.get( 'bee/config/beeKarma/database_password' ) %>
