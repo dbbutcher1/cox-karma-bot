@@ -12,24 +12,21 @@
 
 ActiveRecord::Schema.define(version: 20170613123614) do
 
-  # These are extensions that must be enabled in order to support this database
-  enable_extension "plpgsql"
-
-  create_table "slack_channels", force: :cascade do |t|
+  create_table "slack_channels", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "slack_id"
   end
 
-  create_table "slack_channels_users", id: false, force: :cascade do |t|
+  create_table "slack_channels_users", id: false, force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.bigint "slack_channel_id"
     t.bigint "slack_user_id"
     t.index ["slack_channel_id"], name: "index_slack_channels_users_on_slack_channel_id"
     t.index ["slack_user_id"], name: "index_slack_channels_users_on_slack_user_id"
   end
 
-  create_table "slack_users", force: :cascade do |t|
+  create_table "slack_users", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8" do |t|
     t.string "alias"
     t.string "slack_id"
     t.integer "karma", default: 0

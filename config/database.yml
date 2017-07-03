@@ -15,8 +15,10 @@
 # gem 'pg'
 #
 default: &default
-  adapter: postgresql
-  encoding: unicode
+  adapter: mysql2
+  encoding: utf8
+  host: localhost
+  port: 3306
   # For details on connection pooling, see Rails configuration guide
   # http://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
@@ -80,6 +82,6 @@ test:
 #
 production:
   <<: *default
-  database: <%= Diplomat::Kv.get( 'bee/config/beeKarma/database' ) %>
-  username: <%= Diplomat::Kv.get( 'bee/config/beeKarma/database_username' ) %>
-  password: <%= Diplomat::Kv.get( 'bee/config/beeKarma/database_password' ) %>
+  database: <%= Diplomat::Kv.get( 'bee/configs/beeKarma/database' ) %>
+  username: <%= Diplomat::Kv.get( 'bee/configs/beeKarma/database_username' ) %>
+  password: <%= Diplomat::Kv.get( 'bee/configs/beeKarma/database_password' ) %>
