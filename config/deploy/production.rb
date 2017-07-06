@@ -21,8 +21,6 @@
 # role :web, %w{user1@primary.com user2@additional.com}, other_property: :other_value
 # role :db,  %w{deploy@example.com}
 
-role :web, %{ENV['DEPLOY_SERVER_IP']}
-
 # Configuration
 # =============
 # You can set any configuration variable like in config/deploy.rb
@@ -61,7 +59,9 @@ role :web, %{ENV['DEPLOY_SERVER_IP']}
 #   }
 set :rails_env, 'production'
 
-set ssh_options: {
+server ENV[ 'DEPLOY_SERVER_IP' ],
+roles: %{web},
+ssh_options: {
   user: ENV[ 'DEPLOY_USER' ],
   keys: [ ENV[ 'DEPLOY_KEY' ] ],
   forward_agent: true,
