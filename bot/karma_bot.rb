@@ -62,7 +62,6 @@ class KarmaBot < SlackRubyBot::Bot
         slack_user.alias = user_alias unless user_alias.blank?
 
         if slack_id != data.user
-
           slack_user.karma += karma
           slack_user.save!
 

@@ -18,7 +18,19 @@ module CoxKarmaBot
     config.top_limit = 20
     config.top_default = 5
     config.leader_default = 10
-  end
 
-  SlackRubyBot::Client.logger.level = Logger::DEBUG
+    Diplomat.configure do |diplomat_config|
+      diplomat_config.url = ENV[ 'CONSUL_ADDRESS' ]
+    end
+
+    config.after_initialize do
+      Thread.abort_on_exception = true
+      #Thread.new do
+        #KaramBot.run
+      #end
+    end
+  end
 end
+
+#Diplomat::Node.register( { node: 'main', address: ENV[ 'CONSUL_ADDRESS' ] } )
+ENV[ 'SLACK_API_TOKEN' ] = ENV[ 'SLACK_API_TOKEN' ] || Diplomat::Kv.get( 'bee/configs/beeKarma/slack_api_token' )
