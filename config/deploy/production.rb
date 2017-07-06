@@ -65,6 +65,6 @@ server ENV[ 'DEPLOY_SERVER_IP' ],
 ssh_options: {
   user: ENV[ 'DEPLOY_USER' ],
   keys: [ ENV[ 'DEPLOY_KEY' ] ],
-  forward_agent: false,
+  forward_agent: true,
   auth_methods: %w(publickey)
 }
