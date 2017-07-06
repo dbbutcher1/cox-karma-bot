@@ -61,8 +61,7 @@ role :web, %{localhost}
 #   }
 set :rails_env, 'production'
 
-server ENV[ 'DEPLOY_SERVER_IP' ],
-ssh_options: {
+set ssh_options: {
   user: ENV[ 'DEPLOY_USER' ],
   keys: [ ENV[ 'DEPLOY_KEY' ] ],
   forward_agent: true,
