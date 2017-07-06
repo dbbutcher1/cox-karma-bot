@@ -61,7 +61,7 @@ set :rails_env, 'production'
 set :stage, :production
 
 server ENV[ 'DEPLOY_SERVER_IP' ],
-roles: [:web, :db, :app]
+roles: [:web, :db, :app],
 ssh_options: {
   user: ENV[ 'DEPLOY_USER' ],
   keys: [ ENV[ 'DEPLOY_KEY' ] ],
