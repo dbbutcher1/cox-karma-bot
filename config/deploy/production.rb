@@ -58,6 +58,7 @@
 #     # password: "please use keys"
 #   }
 set :rails_env, 'production'
+set :stage, :production
 
 server ENV[ 'DEPLOY_SERVER_IP' ],
 roles: %{web app db},
