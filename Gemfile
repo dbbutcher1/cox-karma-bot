@@ -36,6 +36,7 @@ gem 'jbuilder', '~> 2.5'
 gem 'capistrano-rails', group: :development
 gem 'capistrano-rvm'
 gem 'capistrano-bundler'
+gem 'capistrano3-puma'
 
 gem 'slack-ruby-bot'
 gem 'faye-websocket'
