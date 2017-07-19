@@ -1,4 +1,5 @@
 require 'slack-ruby-bot'
+require 'pry'
 
 class KarmaBot < SlackRubyBot::Bot
 
@@ -35,24 +36,27 @@ class KarmaBot < SlackRubyBot::Bot
 
       # Magical regex that will find all instances of users with a + or -
       karma_changes = data.text.scan( /(([\w^-]+|<[^>]+>)\s*([+]{2,}|[-]{2,}))/ ).collect { |x| x.first }
+      karma_changes.delete_if { |val| val.gsub(/[+-]/, '').length == 0 }
 
       # Use this to print out stuff in a formatted way in slack
       attachments = []
 
       karma_changes.each do | karma_change |
 
-        # Do some magic and remove the cruft so that we can act on only the requested karma chnage
+        # Do some magic and remove the cruft so that we can act on only the requested karma change
         change = karma_change.scan( /[+]{2,}|[-]{2,}/ ).first
 
         # Parse out the user id and remove angle brackets and the @ symbol
         user_string = karma_change.gsub( /\<|\>|\+{2,}|\-{2,}|\@/, '' ).strip
 
         slack_id, user_alias = user_string.split( '|' )
+        removed = false
 
         if change.include?( '+' )
           karma = change.count( '+' ) - 1 > Rails.application.config.max_karma ?
             Rails.application.config.max_karma : change.count( '+' ) - 1
         else
+          removed = true
           karma = -( change.count( '-' ) - 1 > Rails.application.config.max_karma ?
             Rails.application.config.max_karma : change.count( '-' ) - 1 )
         end
@@ -67,9 +71,9 @@ class KarmaBot < SlackRubyBot::Bot
 
           attachments << {
             fallback: "<@#{slack_user.slack_id}> now has #{slack_user.karma}",
-            title: 'Karma Given',
+            title: removed ? 'Karma Taken' : 'Karma Given',
             text: "<@#{slack_user.slack_id}> now has #{slack_user.karma}",
-            color: '#00FF00'
+            color: removed ? '#FF0000' : '#00FF00'
           }
         else
           if karma > 0
@@ -96,7 +100,7 @@ class KarmaBot < SlackRubyBot::Bot
         end
       end
 
-      client.web_client.chat_postMessage( channel: channel.slack_id, as_user: true, attachments: attachments )
+      client.web_client.chat_postMessage( channel: channel.slack_id, as_user: true, attachments: attachments ) unless attachments.empty?
 
     rescue Exception => e
       puts e.message, e.backtrace
@@ -140,8 +144,8 @@ class KarmaBot < SlackRubyBot::Bot
   end
 
   command 'top' do |client, data, match|
-    count = match.to_a.find { |val| val.to_i > 0 }
-    count = count.nil? ? 5 : [ count, 20 ].min
+
+    count = match[:expression].to_i > 0 ? [ match[:expression].to_i, 20 ].min : 5
 
     begin
       #use to report user karma
