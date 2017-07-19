@@ -1,5 +1,4 @@
 require 'slack-ruby-bot'
-require 'pry'
 
 class KarmaBot < SlackRubyBot::Bot
 
