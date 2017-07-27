@@ -34,7 +34,7 @@ class KarmaBot < SlackRubyBot::Bot
       channel = SlackChannel.find_or_create_by( slack_id: data.channel )
 
       # Magical regex that will find all instances of users with a + or -
-      karma_changes = data.text.scan( /(([\w^-]+|<[^>]+>)\s*([+]{2,}|[-]{2,}))/ ).collect { |x| x.first }
+      karma_changes = data.text.scan( /(([\w^-]+|<[^>]+>)\s*([+]{2,}|[^<>;][-]{2,}[^<>&]))/ ).collect { |x| x.first }
       karma_changes.delete_if { |val| val.gsub(/[+-]/, '').length == 0 }
 
       # Use this to print out stuff in a formatted way in slack
